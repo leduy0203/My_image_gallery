@@ -11,7 +11,7 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 public class PhotoDetailActivity extends AppCompatActivity {
-
+    //d
     private ViewPager2 viewPager;
     private int currentImageIndex = 0;  // Chỉ số ảnh hiện tại trong danh sách
     private List<String> imagePaths;  // Danh sách các đường dẫn ảnh
