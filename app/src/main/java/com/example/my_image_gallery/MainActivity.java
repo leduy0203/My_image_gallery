@@ -87,4 +87,18 @@ public class MainActivity extends AppCompatActivity implements ImageAdapter.OnIt
         }
         return imagePaths;
     }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 100) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Quyền đã được cấp, tải ảnh
+                loadImages();
+            } else {
+                // Quyền bị từ chối
+                photoCount.setText("Permission denied!");
+            }
+        }
+    }
+
 }
