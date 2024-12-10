@@ -1,7 +1,6 @@
 package com.example.my_image_gallery;
 
 import android.os.Bundle;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -16,8 +15,6 @@ public class PhotoDetailActivity extends AppCompatActivity {
     private int currentImageIndex = 0; // Chỉ số ảnh hiện tại
     private List<String> imagePaths;  // Danh sách các đường dẫn ảnh
     private PhotoPagerAdapter adapter; // Adapter cho ViewPager2
-
-    private GestureDetector gestureDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,38 +37,49 @@ public class PhotoDetailActivity extends AppCompatActivity {
         // Thêm PageTransformer
         viewPager.setPageTransformer(new DepthPageTransformer());
 
-        // Khởi tạo GestureDetector
-        gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+        // Gán OnTouchListener cho ViewPager2
+        viewPager.setOnTouchListener(new View.OnTouchListener() {
+            private float initialX = 0f;
+
             @Override
-            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-                if (e1 != null && e2 != null && e2.getPointerCount() == 3) { // Xử lý khi có 3 ngón tay
-                    if (Math.abs(distanceX) > Math.abs(distanceY)) { // Vuốt ngang
-                        if (distanceX > 0) {
-                            // Vuốt sang trái: Chuyển sang ảnh tiếp theo
-                            int nextIndex = viewPager.getCurrentItem() + 1;
-                            if (nextIndex < imagePaths.size()) {
-                                viewPager.setCurrentItem(nextIndex, true);
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getPointerCount() == 3) { // Chỉ xử lý khi đủ 3 ngón tay
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            initialX = event.getX(); // Ghi lại vị trí bắt đầu
+                            viewPager.requestDisallowInterceptTouchEvent(true); // Ngăn ViewPager2 chặn sự kiện
+                            return true;
+
+                        case MotionEvent.ACTION_MOVE:
+                            float currentX = event.getX();
+                            float deltaX = currentX - initialX;
+
+                            if (Math.abs(deltaX) > 50) { // Kiểm tra nếu vuốt đủ xa
+                                if (deltaX < 0) {
+                                    // Vuốt sang trái: Chuyển sang ảnh tiếp theo
+                                    int nextIndex = viewPager.getCurrentItem() + 1;
+                                    if (nextIndex < imagePaths.size()) {
+                                        viewPager.setCurrentItem(nextIndex, true);
+                                    }
+                                } else {
+                                    // Vuốt sang phải: Quay lại ảnh trước
+                                    int prevIndex = viewPager.getCurrentItem() - 1;
+                                    if (prevIndex >= 0) {
+                                        viewPager.setCurrentItem(prevIndex, true);
+                                    }
+                                }
+                                initialX = currentX; // Cập nhật lại vị trí
                             }
-                        } else {
-                            // Vuốt sang phải: Quay lại ảnh trước
-                            int prevIndex = viewPager.getCurrentItem() - 1;
-                            if (prevIndex >= 0) {
-                                viewPager.setCurrentItem(prevIndex, true);
-                            }
-                        }
+                            return true;
+
+                        case MotionEvent.ACTION_UP:
+                        case MotionEvent.ACTION_CANCEL:
+                            viewPager.requestDisallowInterceptTouchEvent(false); // Cho phép ViewPager2 xử lý lại sự kiện
+                            return true;
                     }
-                    return true; // Đã xử lý sự kiện
                 }
                 return false;
             }
-        });
-
-        // Gán OnTouchListener cho ViewPager2
-        viewPager.setOnTouchListener((v, event) -> {
-            if (event.getPointerCount() == 3) {
-                return gestureDetector.onTouchEvent(event); // Xử lý vuốt bằng GestureDetector
-            }
-            return false; // Không xử lý nếu không phải 3 ngón
         });
     }
 
