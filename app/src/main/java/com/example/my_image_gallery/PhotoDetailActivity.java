@@ -44,29 +44,35 @@ public class PhotoDetailActivity extends AppCompatActivity {
         gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-                // Chỉ xử lý nếu có 3 ngón tay
-                if (e1 != null && e2 != null && e2.getPointerCount() == 3) {
-                    if (distanceX > 0) {
-                        // Vuốt sang trái: Chuyển sang ảnh tiếp theo
-                        int nextIndex = viewPager.getCurrentItem() + 1;
-                        if (nextIndex < imagePaths.size()) {
-                            viewPager.setCurrentItem(nextIndex, true);
-                        }
-                    } else if (distanceX < 0) {
-                        // Vuốt sang phải: Quay lại ảnh trước
-                        int prevIndex = viewPager.getCurrentItem() - 1;
-                        if (prevIndex >= 0) {
-                            viewPager.setCurrentItem(prevIndex, true);
+                if (e1 != null && e2 != null && e2.getPointerCount() == 3) { // Xử lý khi có 3 ngón tay
+                    if (Math.abs(distanceX) > Math.abs(distanceY)) { // Vuốt ngang
+                        if (distanceX > 0) {
+                            // Vuốt sang trái: Chuyển sang ảnh tiếp theo
+                            int nextIndex = viewPager.getCurrentItem() + 1;
+                            if (nextIndex < imagePaths.size()) {
+                                viewPager.setCurrentItem(nextIndex, true);
+                            }
+                        } else {
+                            // Vuốt sang phải: Quay lại ảnh trước
+                            int prevIndex = viewPager.getCurrentItem() - 1;
+                            if (prevIndex >= 0) {
+                                viewPager.setCurrentItem(prevIndex, true);
+                            }
                         }
                     }
-                    return true;
+                    return true; // Đã xử lý sự kiện
                 }
                 return false;
             }
         });
 
         // Gán OnTouchListener cho ViewPager2
-        viewPager.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
+        viewPager.setOnTouchListener((v, event) -> {
+            if (event.getPointerCount() == 3) {
+                return gestureDetector.onTouchEvent(event); // Xử lý vuốt bằng GestureDetector
+            }
+            return false; // Không xử lý nếu không phải 3 ngón
+        });
     }
 
     private static class DepthPageTransformer implements ViewPager2.PageTransformer {
