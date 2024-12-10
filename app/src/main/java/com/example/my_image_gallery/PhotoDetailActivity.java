@@ -5,6 +5,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -43,8 +44,8 @@ public class PhotoDetailActivity extends AppCompatActivity {
         gestureDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-                // Kiểm tra số ngón tay
-                if (e1.getPointerCount() == 3) {
+                // Chỉ xử lý nếu có 3 ngón tay
+                if (e1 != null && e2 != null && e2.getPointerCount() == 3) {
                     if (distanceX > 0) {
                         // Vuốt sang trái: Chuyển sang ảnh tiếp theo
                         int nextIndex = viewPager.getCurrentItem() + 1;
@@ -58,22 +59,19 @@ public class PhotoDetailActivity extends AppCompatActivity {
                             viewPager.setCurrentItem(prevIndex, true);
                         }
                     }
-                    return true; // Đã xử lý sự kiện
+                    return true;
                 }
                 return false;
             }
         });
-    }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        // Xử lý sự kiện chạm qua GestureDetector
-        return gestureDetector.onTouchEvent(event) || super.onTouchEvent(event);
+        // Gán OnTouchListener cho ViewPager2
+        viewPager.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
     }
 
     private static class DepthPageTransformer implements ViewPager2.PageTransformer {
         @Override
-        public void transformPage(View page, float position) {
+        public void transformPage(@NonNull View page, float position) {
             int pageWidth = page.getWidth();
             if (position < -1) {
                 page.setAlpha(0);
